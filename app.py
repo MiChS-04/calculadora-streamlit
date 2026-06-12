@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import io 
 
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(
@@ -16,8 +17,8 @@ st.write("---")
 
 # 2. ENTRADAS DE DATOS EN LA BARRA LATERAL (INPUTS)
 st.sidebar.header("📐 Parámetros Globales del Proyecto")
-area_construccion = st.sidebar.number_input("Área Total de Construcción / Techo (m²):", min_value=1.0, value=60.0, step=5.0)
-area_pared = st.sidebar.number_input("Área de Pared a Enchapar (m²):", min_value=0.0, value=20.0, step=5.0)
+area_construccion = st.sidebar.number_input("Área Total de Construcción / Techo (m²):", min_value=1, value=60, step=5)
+area_pared = st.sidebar.number_input("Área de Pared a Enchapar (m²):", min_value=0, value=20, step=5)
 
 # MÓDULO DE LADRILLOS DE MURO (CON OPCIÓN PERSONALIZADA)
 st.sidebar.write("---")
@@ -259,3 +260,39 @@ elif total_p2 < total_p1:
     st.success(f"✔️ **Estrategia de Suministro:** Se recomienda realizar la compra con el **Proveedor 2**. Ahorro neto de **S/. {ahorro:,.2f}**.")
 else:
     st.info("📊 Ambos proveedores presentan un empate técnico.")
+st.write("---")
+
+st.write("---")
+
+# GRÁFICO COMPARATIVO
+st.subheader("📊 Comparativa Visual por Material")
+
+import plotly.express as px
+
+df_grafico = pd.DataFrame({
+    "Material": ["Ladrillo Muro", "Ladrillo Techo", "Cemento", "Fierro", "Piso", "Pared"],
+    "Proveedor 1": [c_lm_p1, c_lt_p1, c_cem_p1, c_f_p1, c_cp_p1, c_cw_p1],
+    "Proveedor 2": [c_lm_p2, c_lt_p2, c_cem_p2, c_f_p2, c_cp_p2, c_cw_p2]
+})
+
+df_melted = df_grafico.melt(id_vars="Material", var_name="Proveedor", value_name="Costo (S/.)")
+
+fig = px.bar(df_melted, x="Material", y="Costo (S/.)", color="Proveedor",
+             barmode="group", title="Costo por Material - P1 vs P2")
+st.plotly_chart(fig, use_container_width=True)
+
+# 9. EXPORTAR A EXCEL
+st.subheader("📥 Exportar Presupuesto")
+
+def exportar_excel():
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df_comparativo.to_excel(writer, index=False, sheet_name='Presupuesto')
+    return output.getvalue()
+
+excel_data = exportar_excel()
+st.download_button(
+    label="⬇️ Descargar Excel",
+    data=excel_data,
+    file_name="presupuesto_capeco.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
