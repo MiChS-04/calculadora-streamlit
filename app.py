@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-import io 
+import io
+import plotly.express as px
 
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(
