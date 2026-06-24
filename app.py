@@ -21,8 +21,9 @@ st.write("---")
 
 # 2. ENTRADAS DE DATOS EN LA BARRA LATERAL (INPUTS)
 st.sidebar.header("📐 Parámetros Globales del Proyecto")
-area_construccion = st.sidebar.number_input("Área Total de Construcción / Techo (m²):", min_value=1.0, value=60.0, step=5.0)
-area_pared = st.sidebar.number_input("Área de Pared a Enchapar (m²):", min_value=0.0, value=20.0, step=5.0)
+num_pisos = st.sidebar.number_input("Número de Pisos de la Edificación:", min_value=1, value=1, step=1)
+area_construccion = st.sidebar.number_input("Área por Piso / Techo (m²):", min_value=1.0, value=60.0, step=5.0)
+area_pared = st.sidebar.number_input("Área de Pared a Enchapar Total (m²):", min_value=0.0, value=20.0, step=5.0)
 
 # MÓDULO DE LADRILLOS DE MURO (CON OPCIÓN PERSONALIZADA)
 st.sidebar.write("---")
@@ -70,7 +71,7 @@ if tipo_cer_pared == "Otro (Personalizado)":
 else:
     nombre_pared = tipo_cer_pared
 
-# # FACTORES LOGÍSTICOS NORMADOS CORREGIDOS
+# FACTORES LOGÍSTICOS NORMADOS CORREGIDOS
 JUNTA_LADRILLO = 0.015       # 1.5 cm de junta
 DESPERDECIO_LADRILLO = 0.05  # 5% merma muros
 DESPERDECIO_TECHO = 0.05     # 5% merma ladrillo techo
@@ -100,23 +101,26 @@ p2_cer_piso = st.sidebar.number_input("Cerámica Piso P2 (S/. por m²):", min_va
 p2_cer_pared = st.sidebar.number_input("Cerámica Pared P2 (S/. por m²):", min_value=1.0, value=34.00, step=1.00, key="p2_cw")
 
 
-# 3. ALGORITMO CIENTÍFICO DE METRADOS
-# A. CÁLCULOS DE MATERIALES DE CONSTRUCCIÓN ---
-cant_ladrillos_m2_neto = 1 / ((L_lad + JUNTA_LADRILLO) * (H_lad + JUNTA_LADRILLO))
-total_ladrillos_muro = round((cant_ladrillos_m2_neto * area_construccion) * (1 + DESPERDECIO_LADRILLO))
+# 3. ALGORITMO CIENTÍFICO DE METRADOS MULTIPISO
+# Cálculo del área acumulada total construida
+area_total_acumulada = area_construccion * num_pisos
 
-# B. Ladrillos de Techo (Aligerado) -> Fórmula CAPECO: 8.33 und/m²
-total_ladrillos_techo = round((area_construccion * 8.33) * (1 + DESPERDECIO_TECHO))
+# A. Ladrillos de Muro (Asumiendo que el área de construcción escala proporcionalmente la densidad de muros)
+cant_ladrillos_m2_neto = 1 / ((L_lad + JUNTA_LADRILLO) * (H_lad + JUNTA_LADRILLO))
+total_ladrillos_muro = round((cant_ladrillos_m2_neto * area_total_acumulada) * (1 + DESPERDECIO_LADRILLO))
+
+# B. Ladrillos de Techo (Aligerado) -> Multiplicado por el número de niveles
+total_ladrillos_techo = round((area_total_acumulada * 8.33) * (1 + DESPERDECIO_TECHO))
 
 # C. Cemento
-total_bolsas_cemento = round(area_construccion * FACTOR_CEMENTO_M2, 1)
+total_bolsas_cemento = round(area_total_acumulada * FACTOR_CEMENTO_M2, 1)
 
 # D. Acero Estructural (Fierro en Varillas)
-peso_acero_total_kg = area_construccion * FACTOR_ACERO_M2
+peso_acero_total_kg = area_total_acumulada * FACTOR_ACERO_M2
 total_varillas_fierro = round(peso_acero_total_kg / PESO_VARILLA_PROMEDIO)
 
-# E. Acabados (Cerámicos con mermas de 5% y 10%)
-total_m2_piso = round(area_construccion * 1.05, 1)
+# E. Acabados (Cerámicos con mermas de 5% y 10%). Nota: El área de pared ingresada ya se asume como metrado total.
+total_m2_piso = round(area_total_acumulada * 1.05, 1)
 total_m2_pared = round(area_pared * 1.10, 1)
 
 
@@ -144,34 +148,34 @@ total_p2 = c_lm_p2 + c_lt_p2 + c_cem_p2 + c_f_p2 + c_cp_p2 + c_cw_p2
 st.subheader("📚 Sustento y Ratios de Ingeniería Civil")
 with st.expander("Ver criterios analíticos y fórmulas de metrado estructural (Normativa CAPECO)"):
     st.markdown("### 1. Cantidad de Ladrillos de Muro por m²")
-    st.latex(r"C_{muro} = \frac{1}{(L_{lad} + J) \times (H_{lad} + J)} \times (1 + \%M_{muro})")
+    st.latex(r"C_{muro} = \frac{1}{(L_{lad} + J) \times (H_{lad} + J)} \times (1 + \%M_{muro}) \times N_{pisos}")
     st.markdown(f"- **Formato seleccionado:** {tipo_ladrillo}")
-    st.markdown(f"- **Rendimiento calculado:** {cant_ladrillos_m2_neto:.2f} und/m² (Con junta de {JUNTA_LADRILLO*100} cm y {DESPERDECIO_LADRILLO*100}% de merma).")
+    st.markdown(f"- **Rendimiento base calculado:** {cant_ladrillos_m2_neto:.2f} und/m² (Con junta de {JUNTA_LADRILLO*100} cm y {DESPERDECIO_LADRILLO*100}% de merma).")
     
     st.markdown("### 2. Cantidad de Ladrillos de Techo Aligerado")
-    st.latex(r"C_{techo} = \left( \text{Área de Losa} \times 8.33 \text{ und/m}^2 \right) \times (1 + \%M_{techo})")
+    st.latex(r"C_{techo} = \left( A_{piso} \times N_{pisos} \times 8.33 \text{ und/m}^2 \right) \times (1 + \%M_{techo})")
     
     st.markdown("### 3. Acero Estructural (Fierro Corrugado)")
-    st.latex(r"V_{fierro} = \frac{\text{Área Construcción} \times \text{Cuantía Estructural (10 kg/m}^2\text{)}}{\text{Peso Comercial de Varilla (7 kg/9m)}}")
+    st.latex(r"V_{fierro} = \frac{(A_{piso} \times N_{pisos}) \times \text{Cuantía Estructural (10 kg/m}^2\text{)}}{\text{Peso Comercial de Varilla (7 kg/9m)}}")
     
     st.markdown("### 4. Revestimientos Cerámicos (Pisos y Paredes)")
-    st.latex(r"\text{Metrado Piso} = A_{construcción} \times 1.05 \quad | \quad \text{Metrado Pared} = A_{enchape} \times 1.10")
-    st.markdown(f"- **Piso:** {nombre_piso} (Añade 5% de merma por cortes).")
+    st.latex(r"\text{Metrado Piso} = (A_{piso} \times N_{pisos}) \times 1.05 \quad | \quad \text{Metrado Pared} = A_{enchape} \times 1.10")
+    st.markdown(f"- **Piso:** {nombre_piso} (Añade 5% de merma por cortes multiplicada por los {num_pisos} niveles).")
     st.markdown(f"- **Pared:** {nombre_pared} (Añade 10% de merma debido a esquinas y derrames).")
 
 st.write("---")
 
 # 6. RESUMEN DE METRADOS
-st.subheader("📊 Cantidades Totales Requeridas (Lista de Materiales de Obra)")
+st.subheader(f"📊 Cantidades Totales Requeridas (Lista de Materiales - Edificación de {num_pisos} Pisos)")
 col1, col2, col3 = st.columns(3)
-col1.metric("🧱 Ladrillos de Muro", f"{total_ladrillos_muro} und")
-col1.metric("🏠 Ladrillos de Techo", f"{total_ladrillos_techo} und")
+col1.metric("🧱 Ladrillos de Muro Total", f"{total_ladrillos_muro} und")
+col1.metric("🏠 Ladrillos de Techo Total", f"{total_ladrillos_techo} und")
 
-col2.metric("🪨 Cemento Sol / APU", f"{total_bolsas_cemento} bolsas")
-col2.metric("⛓️ Fierro de Construcción", f"{total_varillas_fierro} varillas (9m)")
+col2.metric("🪨 Cemento Sol / APU Total", f"{total_bolsas_cemento} bolsas")
+col2.metric("⛓️ Fierro de Construcción Total", f"{total_varillas_fierro} varillas (9m)")
 
-col3.metric("📐 Cerámica de Piso", f"{total_m2_piso} m²")
-col3.metric("🧼 Cerámica de Pared", f"{total_m2_pared} m²")
+col3.metric("📐 Cerámica de Piso Total", f"{total_m2_piso} m²")
+col3.metric("🧼 Cerámica de Pared Total", f"{total_m2_pared} m²")
 
 st.write("---")
 
@@ -180,12 +184,10 @@ st.write("---")
 # =============================================================================
 st.subheader("⚖️ Análisis Comparativo de Presupuestos")
 
-# Evaluamos de forma automática cuál es el menor costo del proyecto
 es_p1_menor = total_p1 < total_p2
 es_p2_menor = total_p2 < total_p1
 diferencia_absoluta = abs(total_p1 - total_p2)
 
-# Fila superior de métricas dinámicas
 cm1, cm2 = st.columns(2)
 
 with cm1:
@@ -194,15 +196,13 @@ with cm1:
         st.metric(
             label="🏆 ¡OPCIÓN MÁS ECONÓMICA!", 
             value=f"S/. {total_p1:,.2f}",
-            delta=f"- S/. {diferencia_absoluta:,.2f} (Ahorro óptimo)",
-            delta_color="normal" # Se pintará verde automáticamente por el beneficio
+            delta=f"- S/. {diferencia_absoluta:,.2f} (Ahorro óptimo)"
         )
     else:
         st.metric(
             label="COSTO TOTAL ESTIMADO P1", 
             value=f"S/. {total_p1:,.2f}",
-            delta=f"+ S/. {diferencia_absoluta:,.2f} (Más caro)",
-            delta_color="normal" # Se pintará rojo automáticamente al ser un incremento
+            delta=f"+ S/. {diferencia_absoluta:,.2f} (Más caro)"
         )
 
 with cm2:
@@ -211,20 +211,17 @@ with cm2:
         st.metric(
             label="🏆 ¡OPCIÓN MÁS ECONÓMICA!", 
             value=f"S/. {total_p2:,.2f}",
-            delta=f"- S/. {diferencia_absoluta:,.2f} (Ahorro óptimo)",
-            delta_color="normal" # Verde automático
+            delta=f"- S/. {diferencia_absoluta:,.2f} (Ahorro óptimo)"
         )
     else:
         st.metric(
             label="COSTO TOTAL ESTIMADO P2", 
             value=f"S/. {total_p2:,.2f}",
-            delta=f"+ S/. {diferencia_absoluta:,.2f} (Más caro)",
-            delta_color="normal" # Rojo automático
+            delta=f"+ S/. {diferencia_absoluta:,.2f} (Más caro)"
         )
 
-st.write("##") # Espacio estético
+st.write("##")
 
-# Tabla única consolidada para comparar precios unitarios y subtotales lado a lado
 st.markdown("#### 📊 Desglose de Costos Estructurado")
 
 df_comparativo = pd.DataFrame({
@@ -233,8 +230,8 @@ df_comparativo = pd.DataFrame({
         "🏠 Ladrillo Techo", 
         "🪨 Cemento Sol / APU", 
         "⛓️ Fierro (Varillas)", 
-        f"📐 Piso ({nombre_piso})", 
-        f"🧼 Pared ({nombre_pared})"
+        "📐 Piso ({})".format(nombre_piso), 
+        "🧼 Pared ({})".format(nombre_pared)
     ],
     "Cantidad Requerida": [
         f"{total_ladrillos_muro} und", 
@@ -250,7 +247,6 @@ df_comparativo = pd.DataFrame({
     "P2: Subtotal": [f"S/. {c_lm_p2:,.2f}", f"S/. {c_lt_p2:,.2f}", f"S/. {c_cem_p2:,.2f}", f"S/. {c_f_p2:,.2f}", f"S/. {c_cp_p2:,.2f}", f"S/. {c_cw_p2:,.2f}"]
 })
 
-# Mostrar la tabla ocupando todo el ancho disponible para una lectura cómoda
 st.dataframe(df_comparativo, use_container_width=True, hide_index=True)
 
 # 8. RECOMENDACIÓN DE COMPRA
@@ -294,31 +290,27 @@ def exportar_excel_profesIONAL(df_origen):
     ws = wb.active
     ws.title = 'Presupuesto'
     
-    # Asegurar líneas de cuadrícula visibles
     ws.views.sheetView[0].showGridLines = True
     
-    # --- ESTILOS DE DISEÑO ---
     fuente_titulo = Font(name='Segoe UI', size=15, bold=True, color='FFFFFF')
     fuente_cabecera = Font(name='Segoe UI', size=11, bold=True, color='FFFFFF')
     fuente_datos = Font(name='Segoe UI', size=11, bold=False)
     fuente_total = Font(name='Segoe UI', size=11, bold=True, color='000000')
     
-    fill_titulo = PatternFill(start_color='1F4E78', end_color='1F4E78', fill_type='solid')    # Azul Acero
-    fill_cabecera = PatternFill(start_color='2C3E50', end_color='2C3E50', fill_type='solid')  # Gris Pizarra
-    fill_total = PatternFill(start_color='EAECEE', end_color='EAECEE', fill_type='solid')     # Gris Claro
+    fill_titulo = PatternFill(start_color='1F4E78', end_color='1F4E78', fill_type='solid')
+    fill_cabecera = PatternFill(start_color='2C3E50', end_color='2C3E50', fill_type='solid')
+    fill_total = PatternFill(start_color='EAECEE', end_color='EAECEE', fill_type='solid')
     
     borde_delgado = Side(border_style="thin", color="D0D3D4")
     border_celda = Border(left=borde_delgado, right=borde_delgado, top=borde_delgado, bottom=borde_delgado)
     border_doble = Border(bottom=Side(border_style="double", color="000000"), top=Side(border_style="thin", color="000000"))
     
-    # --- 1. ENCABEZADO PRINCIPAL ---
     ws.merge_cells('A1:F2')
     ws['A1'] = "SISTEMA INTEGRAL DE PRESUPUESTOS - CAPECO"
     ws['A1'].font = fuente_titulo
     ws['A1'].fill = fill_titulo
     ws['A1'].alignment = Alignment(horizontal='center', vertical='center')
     
-    # --- 2. CABECERA DE TABLA (Fila 4) ---
     columnas = ["Material de Construcción", "Cantidad Requerida", "P1: P. Unitario", "P1: Subtotal", "P2: P. Unitario", "P2: Subtotal"]
     for col_num, header in enumerate(columnas, 1):
         celda = ws.cell(row=4, column=col_num, value=header)
@@ -326,42 +318,35 @@ def exportar_excel_profesIONAL(df_origen):
         celda.fill = fill_cabecera
         celda.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
     
-    # --- 3. INYECCIÓN DE DATOS Y FORMATEO ---
     fila_inicio = 5
     for idx, row in df_origen.iterrows():
         fila_act = fila_inicio + idx
         
-        # Textos alineados a la izquierda y cantidades a la derecha
         c_a = ws.cell(row=fila_act, column=1, value=str(row['Material de Construcción']))
         c_a.alignment = Alignment(horizontal='left', vertical='center')
         
         c_b = ws.cell(row=fila_act, column=2, value=str(row['Cantidad Requerida']))
         c_b.alignment = Alignment(horizontal='right', vertical='center')
         
-        # Extracción e identificación de valores monetarios
         valores_origen = [row['P1: P. Unitario'], row['P1: Subtotal'], row['P2: P. Unitario'], row['P2: Subtotal']]
         
         valores_num = []
         for val in valores_origen:
             if isinstance(val, str):
-                # Quitamos el formato de texto para procesar números limpios
                 val_limpio = val.replace('S/.', '').replace(' ', '').replace(',', '').strip()
                 valores_num.append(float(val_limpio) if val_limpio else 0.0)
             else:
                 valores_num.append(float(val) if val is not None else 0.0)
                 
-        # Inyectar precios en las columnas de la 3 a la 6 con formato contable
         for i, val_final in enumerate(valores_num, 3):
             c_num = ws.cell(row=fila_act, column=i, value=val_final)
             c_num.number_format = '"S/." #,##0.00'
             c_num.alignment = Alignment(horizontal='right', vertical='center')
             
-        # Aplicar fuentes y bordes delgados a toda la fila de datos
         for col_num in range(1, 7):
             ws.cell(row=fila_act, column=col_num).font = fuente_datos
             ws.cell(row=fila_act, column=col_num).border = border_celda
 
-    # --- 4. FILA DE TOTALES CON FÓRMULAS VIVAS ---
     fila_total = fila_inicio + len(df_origen)
     ws.cell(row=fila_total, column=1, value="COSTO TOTAL ESTIMADO").font = fuente_total
     ws.cell(row=fila_total, column=1).fill = fill_total
@@ -369,7 +354,6 @@ def exportar_excel_profesIONAL(df_origen):
     for col_num in range(2, 7):
         ws.cell(row=fila_total, column=col_num).fill = fill_total
         
-    # Inyección de fórmulas SUM automáticas de Excel
     tot_p1 = ws.cell(row=fila_total, column=4, value=f"=SUM(D5:D{fila_total-1})")
     tot_p1.number_format = '"S/." #,##0.00'
     tot_p1.font = fuente_total
@@ -380,7 +364,6 @@ def exportar_excel_profesIONAL(df_origen):
     tot_p2.font = fuente_total
     tot_p2.border = border_doble
 
-    # --- 5. AUTOAJUSTE INTELIGENTE DE COLUMNAS ---
     for col in ws.columns:
         max_len = 0
         col_letter = get_column_letter(col[0].column)
@@ -392,7 +375,6 @@ def exportar_excel_profesIONAL(df_origen):
     wb.save(output)
     return output.getvalue()
 
-# Ejecución final de la descarga pasando tu DataFrame consolidado real
 excel_data = exportar_excel_profesIONAL(df_comparativo)
 
 st.download_button(
