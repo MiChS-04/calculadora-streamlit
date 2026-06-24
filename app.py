@@ -25,6 +25,12 @@ num_pisos = st.sidebar.number_input("Número de Pisos de la Edificación:", min_
 area_construccion = st.sidebar.number_input("Área por Piso / Techo (m²):", min_value=1.0, value=60.0, step=5.0)
 area_pared = st.sidebar.number_input("Área de Pared a Enchapar Total (m²):", min_value=0.0, value=20.0, step=5.0)
 
+# -----------------------------------------------------------------------------
+# INTEGRACIÓN DE LA OPCIÓN A: CÁLCULO Y VISUALIZACIÓN EN LA BARRA LATERAL
+# -----------------------------------------------------------------------------
+area_total_construir = num_pisos * area_construccion
+st.sidebar.info(f"**🏢 Área Total a Construir:** {area_total_construir:.2f} m²")
+
 # MÓDULO DE LADRILLOS DE MURO (CON OPCIÓN PERSONALIZADA)
 st.sidebar.write("---")
 st.sidebar.subheader("🧱 Ladrillo para Muros")
@@ -102,14 +108,14 @@ p2_cer_pared = st.sidebar.number_input("Cerámica Pared P2 (S/. por m²):", min_
 
 
 # 3. ALGORITMO CIENTÍFICO DE METRADOS MULTIPISO
-# Cálculo del área acumulada total construida
-area_total_acumulada = area_construccion * num_pisos
+# Uso directo de la variable calculada
+area_total_acumulada = area_total_construir
 
-# A. Ladrillos de Muro (Asumiendo que el área de construcción escala proporcionalmente la densidad de muros)
+# A. Ladrillos de Muro
 cant_ladrillos_m2_neto = 1 / ((L_lad + JUNTA_LADRILLO) * (H_lad + JUNTA_LADRILLO))
 total_ladrillos_muro = round((cant_ladrillos_m2_neto * area_total_acumulada) * (1 + DESPERDECIO_LADRILLO))
 
-# B. Ladrillos de Techo (Aligerado) -> Multiplicado por el número de niveles
+# B. Ladrillos de Techo (Aligerado)
 total_ladrillos_techo = round((area_total_acumulada * 8.33) * (1 + DESPERDECIO_TECHO))
 
 # C. Cemento
@@ -119,7 +125,7 @@ total_bolsas_cemento = round(area_total_acumulada * FACTOR_CEMENTO_M2, 1)
 peso_acero_total_kg = area_total_acumulada * FACTOR_ACERO_M2
 total_varillas_fierro = round(peso_acero_total_kg / PESO_VARILLA_PROMEDIO)
 
-# E. Acabados (Cerámicos con mermas de 5% y 10%). Nota: El área de pared ingresada ya se asume como metrado total.
+# E. Acabados (Cerámicos con mermas de 5% y 10%)
 total_m2_piso = round(area_total_acumulada * 1.05, 1)
 total_m2_pared = round(area_pared * 1.10, 1)
 
@@ -179,9 +185,7 @@ col3.metric("🧼 Cerámica de Pared Total", f"{total_m2_pared} m²")
 
 st.write("---")
 
-# =============================================================================
-# 7. ANÁLISIS COMPARATIVO DE PRESUPUESTOS (SELECCIÓN AUTOMÁTICA INTELIGENTE)
-# =============================================================================
+# 7. ANÁLISIS COMPARATIVO DE PRESUPUESTOS
 st.subheader("⚖️ Análisis Comparativo de Presupuestos")
 
 es_p1_menor = total_p1 < total_p2
@@ -230,8 +234,8 @@ df_comparativo = pd.DataFrame({
         "🏠 Ladrillo Techo", 
         "🪨 Cemento Sol / APU", 
         "⛓️ Fierro (Varillas)", 
-        "📐 Piso ({})".format(nombre_piso), 
-        "🧼 Pared ({})".format(nombre_pared)
+        f"📐 Piso ({nombre_piso})", 
+        f"🧼 Pared ({nombre_pared})"
     ],
     "Cantidad Requerida": [
         f"{total_ladrillos_muro} und", 
@@ -333,7 +337,8 @@ def exportar_excel_profesIONAL(df_origen):
         valores_num = []
         for val in valores_origen:
             if isinstance(val, str):
-                val_limpio = val.replace('S/.', '').replace(' ', '').replace(',', '').strip()
+                # Limpieza robusta eliminando S/., comas, espacios y caracteres especiales residuales
+                val_limpio = val.replace('S/.', '').replace('S/', '').replace(',', '').replace(' ', '').strip()
                 valores_num.append(float(val_limpio) if val_limpio else 0.0)
             else:
                 valores_num.append(float(val) if val is not None else 0.0)
