@@ -147,7 +147,7 @@ total_p2 = c_lm_p2 + c_lt_p2 + c_cem_p2 + c_f_p2 + c_cp_p2 + c_cw_p2
 
 
 # 5. VISUALIZACIÓN DE SUSTENTO TÉCNICO
-st.subheader("📚 Sustento y Ratios de Ingeniería Civil")
+st.subheader("📚 Sustento y ratios de Ingeniería Civil")
 with st.expander("Ver criterios analíticos y fórmulas de metrado estructural (Normativa CAPECO)"):
     st.markdown("### 1. Cantidad de Ladrillos de Muro por m²")
     st.latex(r"C_{muro} = \frac{1}{(L_{lad} + J) \times (H_{lad} + J)} \times (1 + \%M_{muro}) \times N_{pisos}")
@@ -168,21 +168,21 @@ with st.expander("Ver criterios analíticos y fórmulas de metrado estructural (
 st.write("---")
 
 # 6. RESUMEN DE METRADOS
-st.subheader(f"📊 Cantidades Totales Requeridas (Lista de Materiales - Edificación de {num_pisos} Pisos)")
+st.subheader(f"📊 Cantidades totales requeridas (Lista de Materiales - Edificación de {num_pisos} Pisos)")
 col1, col2, col3 = st.columns(3)
-col1.metric("🧱 Ladrillos de Muro Total", f"{total_ladrillos_muro} und")
-col1.metric("🏠 Ladrillos de Techo Total", f"{total_ladrillos_techo} und")
+col1.metric("🧱 Ladrillos de muro total", f"{total_ladrillos_muro} und")
+col1.metric("🏠 Ladrillos de techo total", f"{total_ladrillos_techo} und")
 
-col2.metric("🪨 Cemento Sol / APU Total", f"{total_bolsas_cemento} bolsas")
-col2.metric("⛓️ Fierro de Construcción Total", f"{total_varillas_fierro} varillas (9m)")
+col2.metric("🪨 Cemento total", f"{total_bolsas_cemento} bolsas")
+col2.metric("⛓️ Fierro de construcción total", f"{total_varillas_fierro} varillas (9m)")
 
-col3.metric("📐 Cerámica de Piso Total", f"{total_m2_piso} m²")
-col3.metric("🧼 Cerámica de Pared Total", f"{total_m2_pared} m²")
+col3.metric("📐 Cerámica de piso total", f"{total_m2_piso} m²")
+col3.metric("🧼 Cerámica de pared total", f"{total_m2_pared} m²")
 
 st.write("---")
 
 # 7. ANÁLISIS COMPARATIVO DE PRESUPUESTOS
-st.subheader("⚖️ Análisis Comparativo de Presupuestos")
+st.subheader("⚖️ Análisis comparativo de presupuestos")
 
 es_p1_menor = total_p1 < total_p2
 es_p2_menor = total_p2 < total_p1
