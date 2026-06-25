@@ -322,7 +322,7 @@ def exportar_excel_profesIONAL(df_origen):
     for idx, row in df_origen.iterrows():
         fila_act = fila_inicio + idx
         
-        c_a = ws.cell(row=fila_act, column=1, value=str(row['Material de Construcción']))
+        c_a = ws.cell(row=fila_act, column=1, value=str(row['Material de construcción']))
         c_a.alignment = Alignment(horizontal='left', vertical='center')
         
         c_b = ws.cell(row=fila_act, column=2, value=str(row['Cantidad Requerida']))
