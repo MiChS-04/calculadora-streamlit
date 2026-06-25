@@ -20,16 +20,16 @@ Esta plataforma realiza el análisis global de materiales para una edificación,
 st.write("---")
 
 # 2. ENTRADAS DE DATOS EN LA BARRA LATERAL (INPUTS)
-st.sidebar.header("📐 Parámetros Globales del Proyecto")
-num_pisos = st.sidebar.number_input("Número de Pisos de la Edificación:", min_value=1, value=1, step=1)
-area_construccion = st.sidebar.number_input("Área por Piso / Techo (m²):", min_value=1.0, value=60.0, step=5.0)
-area_pared = st.sidebar.number_input("Área de Pared a Enchapar Total (m²):", min_value=0.0, value=20.0, step=5.0)
+st.sidebar.header("📐 Parámetros globales del proyecto")
+num_pisos = st.sidebar.number_input("Número de pisos de la edificación:", min_value=1, value=1, step=1)
+area_construccion = st.sidebar.number_input("Área por piso / techo (m²):", min_value=1.0, value=60.0, step=5.0)
+area_pared = st.sidebar.number_input("Área de pared a enchapar total (m²):", min_value=0.0, value=20.0, step=5.0)
 area_total_construir = num_pisos * area_construccion
-st.sidebar.info(f"**🏢 Área Total a Construir:** {area_total_construir:.2f} m²")
+st.sidebar.info(f"**🏢 Área total a construir:** {area_total_construir:.2f} m²")
 
 # MÓDULO DE LADRILLOS DE MURO (CON OPCIÓN PERSONALIZADA)
 st.sidebar.write("---")
-st.sidebar.subheader("🧱 Ladrillo para Muros")
+st.sidebar.subheader("🧱 Ladrillo para muros")
 tipo_ladrillo = st.sidebar.selectbox(
     "Formato de Ladrillo de Muro:",
     ["King Kong Estándar (24x13x9 cm)", "Ladrillo Pandereta (23x11x9 cm)", "Otro (Personalizado)"]
