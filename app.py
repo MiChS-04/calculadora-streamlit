@@ -73,7 +73,7 @@ if tipo_cer_pared == "Otro (Personalizado)":
 else:
     nombre_pared = tipo_cer_pared
 
-# FACTORES LOGÍSTICOS NORMADOS CORREGIDOS
+# FACTORES LOGÍSTICOS NORMADOS 
 JUNTA_LADRILLO = 0.015       # 1.5 cm de junta
 DESPERDECIO_LADRILLO = 0.05  # 5% merma muros
 DESPERDECIO_TECHO = 0.05     # 5% merma ladrillo techo
