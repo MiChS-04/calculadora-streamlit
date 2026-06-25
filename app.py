@@ -222,13 +222,13 @@ with cm2:
 
 st.write("##")
 
-st.markdown("#### 📊 Desglose de Costos Estructurado")
+st.markdown("#### 📊 Desglose de costos estructurado")
 
 df_comparativo = pd.DataFrame({
-    "Material de Construcción": [
-        "🧱 Ladrillo Muro", 
-        "🏠 Ladrillo Techo", 
-        "🪨 Cemento Sol / APU", 
+    "Material de construcción": [
+        "🧱 Ladrillo muro", 
+        "🏠 Ladrillo techo", 
+        "🪨 Cemento", 
         "⛓️ Fierro (Varillas)", 
         f"📐 Piso ({nombre_piso})", 
         f"🧼 Pared ({nombre_pared})"
@@ -263,7 +263,7 @@ else:
 # =============================================================================
 # GRÁFICO COMPARATIVO
 # =============================================================================
-st.subheader("📊 Comparativa Visual por Material")
+st.subheader("📊 Comparativa visual por material")
 
 df_grafico = pd.DataFrame({
     "Material": ["Ladrillo Muro", "Ladrillo Techo", "Cemento", "Fierro", "Piso", "Pared"],
@@ -379,7 +379,7 @@ def exportar_excel_profesIONAL(df_origen):
 excel_data = exportar_excel_profesIONAL(df_comparativo)
 
 st.download_button(
-    label="⬇️ Descargar Presupuesto en Excel",
+    label="⬇️ Descargar presupuesto en Excel",
     data=excel_data,
     file_name="presupuesto_estructurado_capeco.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
