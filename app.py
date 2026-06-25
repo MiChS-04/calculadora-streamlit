@@ -250,7 +250,7 @@ df_comparativo = pd.DataFrame({
 st.dataframe(df_comparativo, use_container_width=True, hide_index=True)
 
 # 8. RECOMENDACIÓN DE COMPRA
-st.subheader("💡 Recomendación de Optimización Financiera")
+st.subheader("💡 Recomendación de optimización financiera")
 if total_p1 < total_p2:
     ahorro = total_p2 - total_p1
     st.success(f"✔️ **Estrategia de Suministro:** Se recomienda realizar la compra con el **Proveedor 1**. Ahorro neto de **S/. {ahorro:,.2f}**.")
@@ -282,7 +282,7 @@ st.plotly_chart(fig, use_container_width=True)
 # MÓDULO DE EXPORTACIÓN A EXCEL PREMIUM
 # =============================================================================
 st.markdown("---")
-st.subheader("📥 Exportar Presupuesto")
+st.subheader("📥 Exportar presupuesto")
 
 def exportar_excel_profesIONAL(df_origen):
     output = io.BytesIO()
