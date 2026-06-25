@@ -13,7 +13,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🏗️ Sistema Integral de Presupuestos de Construcción (Normativa CAPECO)")
+st.title("🏗️ Calculadora integral de presupuestos de construcción (Normativa CAPECO)")
 st.markdown("""
 Esta plataforma realiza el análisis global de materiales para una edificación, integrando **muros, acabados, estructuras de concreto y acero estructural**, aplicando las mermas y rendimientos estándar de la Cámara Peruana de la Construcción (CAPECO).
 """)
